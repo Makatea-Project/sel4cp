@@ -1678,7 +1678,7 @@ def build_system(
                 (Sel4ARMPageTableMap, pts, pt_objects),
             ]
     elif kernel_config.arch == KernelArch.X86_64:
-        default_vm_attributes = SEL4_RISCV_DEFAULT_VMATTRIBUTES
+        default_vm_attributes = SEL4_X86_DEFAULT_VMATTRIBUTES
         vspace_invocations = [
             (Sel4X86PDPTMap, uds, ud_objects),
             (Sel4X86PageDirectoryMap, ds, d_objects),
