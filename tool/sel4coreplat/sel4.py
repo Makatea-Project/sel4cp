@@ -308,22 +308,22 @@ def _get_n_paging(region: MemoryRegion, bits: int) -> int:
 
 def _vtd_get_n_paging(x86_machine) -> int:
     size = 0
-    size += 1                      # one for the root table
-    size += N_VTD_CONTEXTS         # one for each context
-    size += len(x86_machine.rmrrs) # one for each device
+    size += 1                         # one for the root table
+    size += N_VTD_CONTEXTS            # one for each context
+    size += len(x86_machine["rmrrs"]) # one for each device
 
-    if len(x86_machine.rmrrs) == 0:
+    if len(x86_machine["rmrrs"]) == 0:
         return size
 
     # @mat: there's more stuff in seL4's vtd_get_n_paging() to be duplicated here.
 
-    for i in range(x86_machine.bootinfo.numIOPTLevels - 1, 0, -1):
+    for i in range(x86_machine["bootinfo"]["numIOPTLevels"] - 1, 0, -1):
         nbits = VTD_PT_INDEX_BITS * i + 12
         if nbits >= 32:
             size += 1
         else:
-            for rmrr in x86_machine.rmrrs:
-                region = MemoryRegion(base=rmrr.base, end=rmrr.limit)
+            for rmrr in x86_machine["rmrrs"]:
+                region = MemoryRegion(base=rmrr["base"], end=rmrr["limit"])
                 size += _get_n_paging(region, 32 - nbits)
     return size
 
@@ -1679,8 +1679,8 @@ def _kernel_partial_boot(
         # On x86 the kernel devices are detected at runtime. The user
         # is expected to collect the data from a live machine and pass
         # it to us via --x86-machine.
-        for kdev in x86_machine.kdevs:
-            device_memory.remove_region(kdev.base, kdev.base + kdev.size)
+        for kdev in x86_machine["kdevs"]:
+            device_memory.remove_region(kdev["base"], kdev["base"] + kdev["size"])
     else:
         for paddr in _kernel_device_addrs(kernel_config.arch, kernel_elf):
             device_memory.remove_region(paddr, paddr + device_size)
@@ -1690,9 +1690,9 @@ def _kernel_partial_boot(
     # physical memory is detected at runtime and passed via the
     # machine configuration file.
     if kernel_config.arch == KernelArch.X86_64:
-        for mr in x86_machine.memory:
-            device_memory.remove_region(mr.base, mr.base + mr.size)
-            normal_memory.insert_region(mr.base, mr.base + mr.size)
+        for mr in x86_machine["memory"]:
+            device_memory.remove_region(mr["base"], mr["base"] + mr["size"])
+            normal_memory.insert_region(mr["base"], mr["base"] + mr["size"])
     else:
         for start, end in _kernel_phys_mem(kernel_elf):
             device_memory.remove_region(start, end)

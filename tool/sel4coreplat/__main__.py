@@ -38,7 +38,6 @@ The following abreviations are used in the source code:
 """
 import sys
 import os
-import munch
 from argparse import ArgumentParser
 from pathlib import Path
 from dataclasses import dataclass
@@ -1959,7 +1958,7 @@ def main() -> int:
         if not args.x86_machine:
             raise UserError("Tool argument --x86-machine is mandatory on x86")
         with open(args.x86_machine, "r") as f:
-            x86_machine = munch.munchify(yaml_load(f, Loader=YamlLoader))
+            x86_machine = yaml_load(f, Loader=YamlLoader)
     else:
         if args.x86_machine:
             raise UserError("Tool argument --x86-machine is only valid for x86")
