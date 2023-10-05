@@ -615,7 +615,7 @@ def build_sel4(
     elif board.arch == BoardArch.AARCH64:
         toolchain_config = f"-DCROSS_COMPILER_PREFIX={AARCH64_TOOLCHAIN}"
     elif board.arch == BoardArch.X86_64:
-        if host_arch != "x86_64":
+        if host_platform.machine() != "x86_64":
             assert False, "@ivanv: Figure out cross-compiling to x86-64"
         else:
             toolchain_config = ""
