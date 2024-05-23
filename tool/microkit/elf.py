@@ -367,10 +367,13 @@ class ElfFile:
         if self.word_size == 64:
             ehsize = ELF_HEADER64.size + 5
             phentsize = ELF_PROGRAM_HEADER64.size
+            shentsize = ELF_SECTION_HEADER64.size
         else:
             ehsize = ELF_HEADER32.size + 5
             phentsize = ELF_PROGRAM_HEADER32.size
+            shentsize = ELF_SECTION_HEADER32.size
         phoff = round_up(ehsize, 8)
+        shoff = phoff + len(self.segments) * phentsize + sum(len(s.data) for s in self.segments)
         header = ElfHeader(
             ident_data=DataEncoding.ELFDATA2LSB,
             ident_version=ElfVersion.EV_CURRENT,
@@ -381,13 +384,13 @@ class ElfFile:
             version=ElfVersion.EV_CURRENT,
             entry=self.entry,
             phoff=phoff,
-            shoff=0,
+            shoff=shoff,
             flags=0,
             ehsize=ehsize,
             phentsize=phentsize,
             phnum=len(self.segments),
-            shentsize=0,
-            shnum=0,
+            shentsize=shentsize,
+            shnum=1,
             shstrndx=0,
         )
         if self.word_size == 64:
@@ -424,9 +427,11 @@ class ElfFile:
                 pheader_bytes = ELF_PROGRAM_HEADER32.pack(*(getattr(pheader, field) for field in ELF_PROGRAM_HEADER32_FIELDS))
             f.write(pheader_bytes)
             data_offset += len(segment.data)
-
         for segment in self.segments:
             f.write(segment.data)
+
+        # Add an inactive section header to pacify grub.
+        f.write(b"\x00" * shentsize)
 
     def write(self, path: Path, machine: MachineType) -> None:
         with path.open("wb") as f:
